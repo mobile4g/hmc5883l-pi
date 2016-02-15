@@ -46,3 +46,114 @@ exports.readMag = function() {
   var z = toShort(msb << 8 | lsb);
   return {x: x, y: y, z: z};
 };
+
+exports.readConfig = function() {
+  var ret = {};
+  var regValue = wpi.wiringPiI2CReadReg8(fd, HCM5883L_REG_CONFIG_A);
+  ret.averagedSamples = (regValue & 0x60) >>> 5;
+  ret.dataOutput = (regValue & 0x1c) >> 2;
+  ret.measurementConfig = (regValue & 0x03);
+  
+  var regValue = wpi.wiringPiI2CReadReg8(fd, HCM5883L_REG_CONFIG_B);
+  ret.gain = (regValue & 0xe0) >> 5;
+  
+  var regValue = wpi.wiringPiI2CReadReg8(fd, HCM5883L_REG_MODE);
+  ret.highSpeed = (regValue & 0x80 != 0);
+  ret.operatingMode = (regValue & 0x03);
+  
+  return regValue;
+};
+
+exports.dumpConfig = function() {
+  var value = exports.readConfig();
+  var averagedSampled;
+  var dataOutput;
+  var measurementConfig;
+  var gain;
+  
+  switch(value.averagedSamples) {
+  case 0:
+    averagedSamples = 1;
+    break;
+  case 1:
+    averagedSamples = 2;
+    break;    
+  case 2:
+    averagedSamples = 4;
+    break;    
+  case 3:
+    averagedSamples = 8;
+    break;    
+  }
+
+  switch(value.dataOutput) {
+  case 0:
+    dataOutput = 0.75;
+    break;
+  case 1:
+    dataOutput = 1.5;
+    break;
+  case 2:
+    dataOutput = 3.0;
+    break;
+  case 3:
+    dataOutput = 7.5;
+    break;
+  case 4:
+    dataOutput = 15.0;
+    break;
+  case 5:
+    dataOutput = 30.0
+    break;
+  case 6:
+    dataOutput = 75.0;
+    break;
+  case 7:
+    dataOutput = -1;
+    break;
+  }
+  
+  switch(value.measurementConfig) {
+  case 0:
+    measurementConfig = "Normal";
+    break;
+  case 1:
+    measurementConfig = "Positive bias";
+    break;
+  case 2:
+    measurementConfig = "Negative bias";
+    break;
+  case 3:
+    measurementConfig = "!!reserved!!";
+    break;
+  }
+  
+  switch(value.gain) {
+  case 0:
+    gain = 1370;
+    break;
+  case 1:
+    gain = 1090;
+    break;
+  case 2:
+    gain = 820;
+    break;
+  case 3:
+    gain = 660;
+    break;
+  case 4:
+    gain = 440;
+    break;
+  case 5:
+    gain = 390;
+    break;
+  case 6:
+    gain = 330;
+    break;
+  case 7:
+    gain = 230;
+    break;
+  }
+
+  console.log("averagedSampled=%s, dataOutput=%s, measurementConfig=%s, gain=%s", averagedSampled, dataOutput, measurementConfig, gain);
+};

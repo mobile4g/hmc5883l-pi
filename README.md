@@ -1,12 +1,13 @@
 # hcm5883l-pi
 
-Access to the HCM5883L digital compass on the Rasperry Pi
+Access to the HCM5883L digital compass on the Raspberry Pi.
 
 ## install
 
 $ npm install hcm5883l-pi
 
 ## Usage
+The package provides a single method called `readMag()` that returns an object containing the `x`, `y` and `z` portions of the vector.
 
 ```
 var HMC5883L = require("hmc5883l-pi");
